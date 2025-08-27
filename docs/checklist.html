@@ -286,7 +286,7 @@
 (function(){
   "use strict";
   var STORAGE_KEY="checklistKayitlar";
-  var FORM_URL="docs/checklist-kst.html";
+  var FORM_URL="checklist-kst.html";
   var tbId="checklistTable";
   function read(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }catch(e){ return []; } }
   function byDateDesc(a,b){
