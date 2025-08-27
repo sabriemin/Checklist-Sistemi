@@ -1,0 +1,296 @@
+
+
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><title>KST Checklist | Rapor (v2.1)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{ --fg:#111; --muted:#666; --line:#ddd; --soft:#f7f7f7; }
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial; color:var(--fg); }
+.wrap{ max-width:980px; margin:8px auto; padding:0 8px; }
+header{ display:flex; align-items:flex-end; justify-content:space-between; gap:10px; margin-bottom:6px; border-bottom:2px solid var(--line); padding-bottom:6px; }
+header h1{ font-size:18px; line-height:1.1; margin:0; }
+header .meta{ text-align:right; }
+header .meta .title{ font-weight:600; color:var(--muted); font-size:11px; }
+header .meta .date{ font-size:12px; }
+.no-print{ display:inline-flex; gap:8px; align-items:center; }
+.btn{ border:1px solid var(--line); padding:6px 9px; border-radius:8px; background:#fff; cursor:pointer; font-weight:600; }
+.section{ margin-top:8px; }
+.section h2{ font-size:13px; margin:0 0 5px; color:#222; }
+.grid{ width:100%; border-collapse:collapse; table-layout:fixed; }
+.grid th, .grid td{ border:1px solid var(--line); padding:3px 3.5px; font-size:10px; vertical-align:top; word-break:break-word; line-height:1.18; }
+.grid th{ background:var(--soft); text-align:left; }
+.muted{ color:var(--muted); }
+.kpi{ display:flex; gap:8px; align-items:center; margin-top:4px; font-size:10.5px; flex-wrap:wrap; }
+.kpi strong{ font-size:11px; }
+.qwrap{ display:flex; gap:6px; align-items:flex-start; }
+.qtext{ flex: 0 1 55%; }
+.subs-inline{ flex: 1 1 45%; font-size:9.8px; color:#222; }
+.subs-inline .item{ margin-right:8px; white-space:nowrap; display:inline-block; }
+.tick{ font-weight:700; }
+.tick.on::before{ content:"☑"; }
+.tick.off::before{ content:"☐"; color:#bbb; }
+.proj-line{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.proj-item{ white-space:nowrap; font-size:10.5px; }
+
+.saatlik-table th, .saatlik-table td{ border:1px solid var(--line); padding:2px 3px; font-size:9.4px; line-height:1.15; }
+.saatlik-table th{ background:var(--soft); }
+.saatlik-name{ width:26%; font-weight:600; }
+.saatlik-time{ text-align:center; width:5.5%; white-space:nowrap; }
+footer{ margin-top:8px; border-top:2px solid var(--line); padding-top:6px; font-size:11px; }
+.signs{ display:flex; justify-content:space-between; gap:32px; margin-top:8px; }
+.sign{ flex:1 1 50%; display:flex; flex-direction:column; gap:6px; }
+.sign .lbl{ font-weight:600; }
+.sign .name{ color:#333; min-height:14px; }
+.sign .imza{ display:flex; align-items:center; gap:8px; margin-top:6px; }
+.sign .imza .dash{ flex:1; height:1px; background:#000; }
+
+/* Print tuning to fit into two A4 pages */
+
+
+.kst-saatlik{ margin-top:4px; }
+.kst-row{ display:flex; align-items:flex-start; gap:12px; margin:6px 0; font-size:11px; }
+.kst-name{ flex:0 0 210px; font-weight:600; font-size:11.5px; }
+.kst-slots{ flex:1 1 auto; display:flex; flex-wrap:wrap; gap:10px 14px; }
+.slot{ display:inline-flex; align-items:center; gap:4px; font-size:11px; }
+.slot .tick.on::before{ content:"☑"; }
+.slot .tick.off::before{ content:"☐"; color:#bbb; }
+.time{ user-select:none; }
+.proj-line{ display:flex; gap:12px; margin-top:4px; font-size:11px; }
+.proj-item{ display:inline-flex; align-items:center; gap:4px; }
+
+@media print{
+  .no-print{ display:none !important; }
+  .wrap{ max-width:auto; margin:0; padding:0 5mm; }
+  header{ margin:0 0 2.5mm; padding:0 0 1.5mm; }
+  .section{ margin-top:2.2mm; }
+  .grid th, .grid td{ padding:1.3mm 1.2mm; font-size:8.8px; line-height:1.12; }
+  header h1{ font-size:13.5px; }
+  header .meta .title{ font-size:9.5px; }
+  header .meta .date{ font-size:10.5px; }
+  .subs-inline{ font-size:8.4px; }
+  .proj-item{ font-size:9px; }
+  .kpi{ font-size:9.6px; gap:6px; }
+  .kpi strong{ font-size:10px; }
+  .saatlik-table th, .saatlik-table td{ padding:1mm; font-size:8px; }
+  footer{ margin-top:3.2mm; padding-top:2.2mm; font-size:10px; }
+  @page{ size:A4; margin:5mm 5mm 6mm; }
+  table, tr, td, th{ page-break-inside:auto; }
+  h2{ page-break-after:avoid; }
+}
+</style>
+</head>
+<body>
+<div class='wrap'>
+  <header>
+    <div>
+      <div class='meta title'>Checklist</div>
+      <h1 id='chkTitle'>KST Checklist</h1>
+    </div>
+    <div class='meta'>
+      <div class='title'>Tarih</div>
+      <div class='date' id='chkDate'>—</div>
+      <div class='kpi'><span class='title'>Durum:</span> <strong id='chkStatus' class='muted'>—</strong></div>
+    </div>
+  </header>
+
+  <div class='no-print' style='margin-bottom:6px;'>
+    <button class='btn' id='btnPrint'>Yazdır</button>
+  </div>
+
+  <section class='section' id='secAcilis'>
+    <h2>Açılış Özeti</h2>
+    <table class='grid' id='tblAcilis'>
+      <thead><tr>
+        <th style='width:68%;'>Maddeler</th>
+        <th style='width:12%;'>Durum</th>
+        <th style='width:20%;'>Aksiyon</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class='section' id='secOrtak'>
+    <h2>Ortak İşler</h2>
+    <table class='grid' id='tblOrtak'>
+      <thead><tr>
+        <th style='width:60%;'>Kalem + Alt Maddeler</th>
+        <th style='width:14%;'>Sabah</th>
+        <th style='width:14%;'>Akşam</th>
+        <th style='width:12%;'>Aksiyon</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class='section' id='secKapanis'>
+    <h2>Kapanış Özeti</h2>
+    <table class='grid' id='tblKapanis'>
+      <thead><tr>
+        <th style='width:68%;'>Maddeler</th>
+        <th style='width:12%;'>Durum</th>
+        <th style='width:20%;'>Aksiyon</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class='kpi' id='kpiProj' style='margin-top:2px;'></div>
+
+    <div class='section'>
+      <h2>Saatlik Kontroller</h2>
+      <div id="saatlikBlock"></div>
+    </div>
+  </section>
+
+
+  <!-- ✅ Yeni Notlar Alanı -->
+  <div class='section'>
+    <h2>Notlar</h2>
+    <div style="margin:4px 0; font-size:11.5px;">
+      <strong>Sabah Notu:</strong> <span id="nmSabahNot">—</span>
+    </div>
+    <div style="margin:4px 0; font-size:11.5px;">
+      <strong>Akşam Notu:</strong> <span id="nmAksamNot">—</span>
+    </div>
+  </div>
+
+  <footer>
+    <div class='signs'>
+      <div class='sign'>
+        <div class='lbl'>Açılış Sorumlusu</div>
+        <div class='name' id='nmAcilis'>—</div>
+        <div class='imza'>İmza <span class='dash'></span></div>
+      </div>
+      <div class='sign'>
+        <div class='lbl'>Kapanış Sorumlusu</div>
+        <div class='name' id='nmKapanis'>—</div>
+        <div class='imza'>İmza <span class='dash'></span></div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+(function(){
+  "use strict";
+  const qs=(s,r)=> (r||document).querySelector(s);
+  const getParam=(n)=> { try{ return new URL(location.href).searchParams.get(n);}catch(e){return null;} };
+  const readAll=()=> { try{ return JSON.parse(localStorage.getItem("checklistKayitlar")||"[]"); }catch(e){ return []; } };
+  const getByDate=(t)=> readAll().find(x=>x.tarih===t);
+  const fmt=(v)=> (v==null||v==="")?"—":String(v);
+
+  function inlineSubs(bools, labels, texts){
+    if(!Array.isArray(bools) || !bools.length) return "";
+    let lbls = (labels && labels.length)?labels : (texts && texts.length?texts:[]);
+    return bools.map((b,i)=>{
+      let lbl = (lbls && lbls[i])?lbls[i].trim():"";
+      return (b?"☑":"☐") + (lbl?(" "+lbl):"");
+    }).join("  ");
+  }
+
+  function stripQuestionParens(q){
+    if(!q) return q;
+    return q.replace(/\([^)]*\)/,"").trim();
+  }
+
+  function fillRows(tbody, rows){
+    tbody.innerHTML="";
+    if(!rows||!rows.length){ tbody.innerHTML='<tr><td colspan="3" class="muted">Kayıt bulunamadı.</td></tr>'; return; }
+    rows.forEach(r=>{
+      const tr=document.createElement("tr");
+      const subs = inlineSubs(r.checkboxes, r.checkboxLabels, r.checkboxTexts);
+      const qtxt = stripQuestionParens(r.soru);
+      const all = subs ? (fmt(qtxt)+" → "+subs) : fmt(qtxt);
+      tr.innerHTML='<td>'+all+'</td><td>'+fmt(r.kontrol)+'</td><td>'+fmt(r.aksiyon)+'</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function fillOrtak(tbody, rows){
+    tbody.innerHTML="";
+    if(!rows||!rows.length){ tbody.innerHTML='<tr><td colspan="4" class="muted">Kayıt bulunamadı.</td></tr>'; return; }
+    rows.forEach(r=>{
+      const tr=document.createElement("tr");
+      const subs = inlineSubs(r.checkboxes, r.checkboxLabels, r.checkboxTexts);
+      const qtxt = stripQuestionParens(r.soru);
+      const all = subs ? (fmt(qtxt)+" → "+subs) : fmt(qtxt);
+      tr.innerHTML='<td>'+all+'</td><td>'+fmt(r.sabah)+'</td><td>'+fmt(r.aksam)+'</td><td>'+fmt(r.aksiyon)+'</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function buildSlot(time,on){ return '<div class="slot"><span class="tick '+(on?'on':'off')+'"></span><span class="time">'+time+'</span></div>'; }
+  function renderSaatlik(rec){
+    const host=qs("#saatlikBlock");
+    const times=["10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"];
+    const container=document.createElement("div"); container.className="kst-saatlik";
+    let groups=Array.isArray(rec?.saatlikGruplar)?rec.saatlikGruplar:null;
+    if(!groups||!groups.length){
+      groups=[
+        {ad:"SIRAFAN Tezgah Hijyeni", values:Array(times.length).fill(false)},
+        {ad:"WC Kontrolü", values:Array(times.length).fill(false)},
+        {ad:"El Dezenfektan Kontrolü", values:Array(times.length).fill(false)},
+      ];
+    }
+    groups.forEach(g=>{
+      const vals=Array.isArray(g.values)?g.values:Array(times.length).fill(false);
+      const row=document.createElement("div"); row.className="kst-row";
+      row.innerHTML='<div class="kst-name">'+(g.ad||"Kontrol")+'</div><div class="kst-slots">'+times.map((t,i)=>buildSlot(t,!!vals[i])).join("")+'</div>';
+      container.appendChild(row);
+    });
+    host.innerHTML=""; host.appendChild(container);
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    const t=getParam("tarih"); const rec=t?getByDate(t):null;
+    qs("#chkDate").textContent=fmt(t);
+    qs("#chkStatus").textContent=rec?(rec.kapanisTamam?"Tamamlandı":(rec.acilisTamam?"Kapanış Bekliyor":"Taslak")):"Bulunamadı";
+    qs("#nmAcilis").textContent=rec?.acilisSorumlu||"—";
+    qs("#nmKapanis").textContent=rec?.kapanisSorumlusu||"—";
+    if(rec){
+      fillRows(qs("#tblAcilis tbody"), rec.acilisSorular||[]);
+      fillRows(qs("#tblKapanis tbody"), rec.kapanisSorular||[]);
+      fillOrtak(qs("#tblOrtak tbody"), rec.ortak||[]);
+      const p=Array.isArray(rec.projeksiyon)?rec.projeksiyon.slice(0,3):[];
+      const labels=["Açılış","18:00","Kapanış"];
+      const items=labels.map((lbl,i)=>'<span class="proj-item"><span class="tick '+(p[i]?'on':'off')+'"></span> '+lbl+'</span>');
+      qs("#kpiProj").innerHTML='<strong>Projeksiyon Odası Kontrolü:</strong><span class="proj-line">'+items.join("")+'</span>';
+      const val=rec.popcornIlk||"";
+      const popcornHTML='<div style="margin:6px 0; font-size:11.5px;"><strong>Sabah İlk Patlatılan Popcorn:</strong> '+(val?val:"—")+'</div>';
+      qs("#kpiProj").insertAdjacentHTML("beforebegin", popcornHTML);
+qs("#nmSabahNot").textContent = rec?.notlar?.sabah || "—";
+      qs("#nmAksamNot").textContent = rec?.notlar?.aksam || "—";
+            renderSaatlik(rec);
+    }
+    qs("#btnPrint").addEventListener("click", ()=>window.print());
+  });
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
